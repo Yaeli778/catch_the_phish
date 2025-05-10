@@ -2,7 +2,6 @@ let model = null;
 let modelWeights = null;
 
 // Load model and weights
-// Modify your loadModel function to include more logging
 async function loadModel() {
   try {
     console.log('Loading phishing detection model...');
@@ -23,8 +22,6 @@ async function loadModel() {
     const weightsBuffer = await weightsResponse.arrayBuffer();
     modelWeights = new Float32Array(weightsBuffer);
     
-    console.log('Model structure:', model.modelTopology);
-    console.log('Model weights length:', modelWeights.length);
     console.log('Model and weights loaded successfully');
   } catch (error) {
     console.error('Error loading model:', error);
@@ -265,6 +262,7 @@ function showNotification(url, score) {
   });
 }
 
+// Listen for tab updates
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url) {
     try {
@@ -286,8 +284,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       // Combined risk score (weighted average)
       const totalScore = (urlAnalysis.score * 0.4) + (websiteAnalysis.score * 0.6);
       
-      debugPhishingDetection(tabId, tab.url);
-
       // Store analysis results for popup
       chrome.storage.local.set({
         [`analysis_${tabId}`]: {
@@ -297,6 +293,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         }
       });
       
+      // Update badge
       chrome.action.setBadgeText({
         text: totalScore >= 40 ? "RISK" : "SAFE",
         tabId: tabId
@@ -311,10 +308,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       if (totalScore >= 40) {
         showNotification(tab.url, totalScore);
       }
-      chrome.scripting.executeScript({
-        target: { tabId: tabId },
-        function: injectSafetyOverlay,
-        args: [totalScore < 40, totalScore]
+
+      // Send message to content script to show overlay
+      chrome.tabs.sendMessage(tabId, {
+        action: 'showOverlay',
+        isSafe: totalScore < 40,
+        score: totalScore
       });
 
     } catch (error) {
@@ -329,81 +328,4 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       });
     }
   }
-})
-
-// Add this debugging function to inspect what's happening
-function debugPhishingDetection(tabId, url) {
-  chrome.storage.local.get([`analysis_${tabId}`], (result) => {
-    const analysis = result[`analysis_${tabId}`];
-    if (analysis) {
-      console.log('==== PHISHING DETECTION DEBUG ====');
-      console.log('URL:', url);
-      console.log('URL Analysis:', analysis.urlAnalysis);
-      console.log('URL Features:', analysis.urlAnalysis.features);
-      console.log('URL Score:', analysis.urlAnalysis.score);
-      console.log('Website Analysis:', analysis.websiteAnalysis);
-      console.log('Website Features:', analysis.websiteAnalysis.features);
-      console.log('Website Score:', analysis.websiteAnalysis.score);
-      console.log('Total Score:', analysis.totalScore);
-      console.log('Model Loaded:', !!model && !!modelWeights);
-      console.log('=================================');
-    }
-  });
-}
-function injectSafetyOverlay(isSafe, score) {
-  // Create an overlay element
-  const overlay = document.createElement('div');
-  overlay.style.position = 'fixed';
-  overlay.style.top = '20px';
-  overlay.style.right = '20px';
-  overlay.style.zIndex = '9999';
-  overlay.style.padding = '15px';
-  overlay.style.borderRadius = '5px';
-  overlay.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-  overlay.style.transition = 'opacity 0.5s';
-  overlay.style.fontSize = '14px';
-  overlay.style.fontFamily = 'Arial, sans-serif';
-  
-  if (isSafe) {
-    overlay.style.backgroundColor = '#dff0d8';
-    overlay.style.color = '#3c763d';
-    overlay.style.border = '1px solid #d6e9c6';
-    overlay.innerHTML = `<strong>Safe Website</strong><br>Risk Score: ${Math.round(score)}%`;
-  } else {
-    overlay.style.backgroundColor = '#f2dede';
-    overlay.style.color = '#a94442';
-    overlay.style.border = '1px solid #ebccd1';
-    overlay.style.fontWeight = 'bold';
-    overlay.innerHTML = `<strong>WARNING: Potential Phishing Risk!</strong><br>Risk Score: ${Math.round(score)}%`;
-  }
-  
-  // Add close button
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.marginLeft = '10px';
-  closeBtn.style.background = 'none';
-  closeBtn.style.border = 'none';
-  closeBtn.style.cursor = 'pointer';
-  closeBtn.style.float = 'right';
-  closeBtn.style.fontSize = '18px';
-  closeBtn.style.fontWeight = 'bold';
-  closeBtn.onclick = function() {
-    document.body.removeChild(overlay);
-  };
-  overlay.insertBefore(closeBtn, overlay.firstChild);
-  
-  // Add to page
-  document.body.appendChild(overlay);
-  
-  // Auto-remove after 5 seconds
-  setTimeout(() => {
-    if (document.body.contains(overlay)) {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        if (document.body.contains(overlay)) {
-          document.body.removeChild(overlay);
-        }
-      }, 500);
-    }
-  }, 5000);
-}
+});
